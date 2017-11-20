@@ -1,0 +1,30 @@
+# Python CircleCI 2.0 configuration file
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+      # TBD: how to make use of our existing Dockerfile?
+      - image: circleci/python:3.6.1
+      
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - type: setup-docker-engine
+      - type: shell
+
+      - run: |
+         docker login -u $DOCKER_USER -p $DOCKER_PASS
+      # build the application image
+      - run: | 
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker build -t firefoxtesteng/firefox-nightly-source:latest .
+              docker push firefoxtesteng/firefox-nightly-source:latest
+            else
+              docker build -t firefoxtesteng/firefox-nightly-source:$CIRCLE_BRANCH .
+              docker push firefoxtesteng/firefox-nightly-source:$CIRCLE_BRANCH
+            fi
